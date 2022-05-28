@@ -16,197 +16,129 @@ import java.util.Scanner;
 
 interface DbWorker
 {
-	void doWork();
+    void doWork();
 }
 class App
 {
-	private enum Option
-	{
-		Unknown,
-		Exit,
-		RegisterBookMaker,
-		ListCourse,
-		RegisterStudent,
-		EnrolStudent
-	}
-	private static App __instance = null;
-	private String __connectionString;
-	private HashMap<Option,DbWorker> __dbMethods;
-	private static final String SELECT_CMD = "select name,dateBirth,sex from dbo.Student";
+    private enum Option
+    {
+        Unknown,
+        Exit,
+        newBetHouse,
+        newPlayerAtBetHouse,
+        newPlayerBet,
+        suspendPlayer,
+        totalPlayersInBetHouse,
+        insertBetResolution,
+        manuelFernandesBets
+    }
+    private static App __instance = null;
+    private String __connectionString;
+    private HashMap<Option,DbWorker> __dbMethods;
 
-	private App()
-	{
-		__dbMethods = new HashMap<Option,DbWorker>();
-		__dbMethods.put(Option.RegisterBookMaker, new DbWorker() {public void doWork() {App.this.RegisterBookMaker();}});
-		//__dbMethods.put(Option.ListStudent, new DbWorker() {public void doWork() {App.this.ListStudent();}});
-		//__dbMethods.put(Option.ListCourse, new DbWorker() {public void doWork() {App.this.ListCourse();}});
-		//__dbMethods.put(Option.RegisterStudent, new DbWorker() {public void doWork() {App.this.RegisterStudent();}});
-		//__dbMethods.put(Option.EnrolStudent, new DbWorker() {public void doWork() {App.this.EnrolStudent();}});
+    private App()
+    {
+        __dbMethods = new HashMap<Option,DbWorker>();
+        __dbMethods.put(Option.newBetHouse, new DbWorker() {public void doWork() {App.this.newBetHouse();}});
+        __dbMethods.put(Option.newPlayerAtBetHouse, new DbWorker() {public void doWork() {App.this.newPlayerAtBetHouse();}});
+        __dbMethods.put(Option.newPlayerBet, new DbWorker() {public void doWork() {App.this.newPlayerBet();}});
+        __dbMethods.put(Option.suspendPlayer, new DbWorker() {public void doWork() {App.this.suspendPlayer();}});
+        __dbMethods.put(Option.totalPlayersInBetHouse, new DbWorker() {public void doWork() {App.this.totalPlayersInBetHouse();}});
+        __dbMethods.put(Option.insertBetResolution, new DbWorker() {public void doWork() {App.this.insertBetResolution();}});
+        __dbMethods.put(Option.manuelFernandesBets, new DbWorker() {public void doWork() {App.this.manuelFernandesBets();}});
+        __dbMethods.put(Option.Exit, new DbWorker() {public void doWork() {App.this.Exit();}});
 
-	}
-	public static App getInstance()
-	{
-		if(__instance == null)
-		{
-			__instance = new App();
-		}
-		return __instance;
-	}
+    }
+    public static App getInstance()
+    {
+        if(__instance == null)
+        {
+            __instance = new App();
+        }
+        return __instance;
+    }
 
-	private Option DisplayMenu()
-	{
-		Option option=Option.Unknown;
-		try
-		{
-			System.out.println("Course management");
-			System.out.println();
-			System.out.println("1. Exit");
-			System.out.println("2. List students");
-			System.out.println("3. List courses");
-			System.out.println("4. Register student");
-			System.out.println("5. Enrol student");
-			System.out.print(">");
-			Scanner s = new Scanner(System.in);
-			int result = s.nextInt();
-			option = Option.values()[result];
-		}
-		catch(RuntimeException ex)
-		{
-			//nothing to do.
-		}
+    private Option DisplayMenu()
+    {
+        Option option=Option.Unknown;
+        try
+        {
+            System.out.println("\t\tBetHouse management");
+            System.out.println();
+            System.out.println("0.\tNew BetHouse");
+            System.out.println("1.\tInsert new Player in BetHouse");
+            System.out.println("2.\tInsert new Bet from Player in BetHouse");
+            System.out.println("3.\tSuspend Player from Playing or Making Transactions");
+            System.out.println("4.\tShow the Total of Players inside BetHouse");
+            System.out.println("5.\tInsert Bet Resolution");
+            System.out.println("6.\tShow Manuel Fernandes's bets");
+            System.out.println("7.\tExit");
+            System.out.print(">");
+            Scanner s = new Scanner(System.in);
+            int result = s.nextInt();
+            option = Option.values()[result];
+        }
+        catch(RuntimeException ex)
+        {
+            //nothing to do.
+        }
 
-		return option;
+        return option;
 
-	}
-	private final static void clearConsole() throws Exception
-	{
-		for (int y = 0; y < 25; y++) //console is 80 columns and 25 lines
-			System.out.println("\n");
+    }
+    private final static void clearConsole() throws Exception
+    {
+        for (int y = 0; y < 25; y++) //console is 80 columns and 25 lines
+            System.out.println("\n");
 
-	}
-	private void Login() throws java.sql.SQLException
-	{
+    }
+    private void Login() throws java.sql.SQLException
+    {
 
-		Connection con = DriverManager.getConnection(getConnectionString());
-		if(con != null)
-			con.close();
+        Connection con = DriverManager.getConnection(getConnectionString());
+        if(con != null)
+            con.close();
 
-	}
-	public void Run() throws Exception
-	{
-		Login ();
-		Option userInput = Option.Unknown;
-		do
-		{
-			clearConsole();
-			userInput = DisplayMenu();
-			clearConsole();
-			try
-			{
-				__dbMethods.get(userInput).doWork();
-				System.in.read();
+    }
+    public void Run() throws Exception
+    {
+        Login ();
+        Option userInput = Option.Unknown;
+        do
+        {
+            clearConsole();
+            userInput = DisplayMenu();
+            clearConsole();
+            try
+            {
+                __dbMethods.get(userInput).doWork();
+                System.in.read();
 
-			}
-			catch(NullPointerException ex)
-			{
-				//Nothing to do. The option was not a valid one. Read another.
-			}
+            }
+            catch(NullPointerException ex)
+            {
+                //Nothing to do. The option was not a valid one. Read another.
+            }
 
-		}while(userInput!=Option.Exit);
-	}
+        }while(userInput!=Option.Exit);
+    }
 
-	public String getConnectionString()
-	{
-		return __connectionString;
-	}
-	public void setConnectionString(String s)
-	{
-		__connectionString = s;
-	}
-
-	/**
-	 To implement from this point forward. Do not need to change the code above.
-	 -------------------------------------------------------------------------------
-	 IMPORTANT:
-	 --- DO NOT MOVE IN THE CODE ABOVE. JUST HAVE TO IMPLEMENT THE METHODS BELOW ---
-	 -------------------------------------------------------------------------------
-
-	 */
-
-	private void printResults(ResultSet dr)
-	{
-		//TODO
-	}
-	private void RegisterBookMaker()
-	{
-		//TODO: Implement
-		System.out.println("ListStudent()");
-	}
-	private void ListCourse()
-	{
-		//TODO: Implement
-		System.out.println("ListCourse()");
-	}
-	private void RegisterStudent()
-	{
-		//TODO: Implement
-		System.out.println("RegisterStudent()");
-	}
-	private void EnrolStudent()
-	{
-		//TODO: Implement
-		System.out.println("EnrolStudent()");
-	}
-
+    public String getConnectionString()
+    {
+        return __connectionString;
+    }
+    public void setConnectionString(String s)
+    {
+        __connectionString = s;
+    }
 }
 
 public class Ap3
 {
-	public static void main(String[] args) throws SQLException,Exception
-	{
-		String url =  "jdbc:postgresql://10.62.73.22:5432/?user=l3n4&password=isigods&ssl=false";
-		App.getInstance().setConnectionString(url);
-		App.getInstance().Run();
-	}
-}
-
-/* -------------------------------------------------------------------------------- 
-private class Connect {
-	private java.sql.Connection con = null;
-    private final String url = "jdbc:sqlserver://";
-    private final String serverName = "localhost";
-    private final String portNumber = "1433";
-    private final String databaseName = "aula03";
-    private final String userName = "matildepato";
-    private final String password = "xxxxxxx";
-
-    // Constructor
-    public Connect() {
-    }
-
-    private java.sql.Connection getConnection() {
-        try {
-            con = java.sql.DriverManager.getConnection(url, user, pwd);
-            if (con != null) {
-                System.out.println("Connection Successful!");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Error Trace in getConnection() : " + e.getMessage());
-        }
-        return con;
-    }
-
-    private void closeConnection() {
-        try {
-            if (con != null) {
-                con.close();
-            }
-            con = null;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public static void main(String[] args) throws SQLException,Exception
+    {
+        String url =  "jdbc:postgresql://10.62.73.22:5432/?user=l3n4&password=isigods&ssl=false";
+        App.getInstance().setConnectionString(url);
+        App.getInstance().Run();
     }
 }
- --------------------------------------------------------------------------------
- */
