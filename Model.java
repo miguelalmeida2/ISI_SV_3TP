@@ -1,4 +1,3 @@
-package jdbc;
 import java.sql.*;
 import java.util.Scanner;
 
@@ -34,11 +33,7 @@ public class Model {
 				System.out.println("Aposta minima must be greater than 0.05");
 				return;
 			}
-			} catch (SQLException throwables) {
-			throwables.printStackTrace();
-		}
-
-	} catch (Exception err) {
+		} catch (Exception err) {
 			System.out.println(err);
 			//Nothing to do. The option was not a valid one. Read another.
 		} finally {
