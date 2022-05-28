@@ -183,11 +183,11 @@ public class Model {
 			int id_jogador = key.nextLine()
 			pstmt.setString(6, key.id);
 
-			pstmtquery_CA = conn.prepareStatement(CMDQuery_casa_apostas)
-			pstmtquery.setId(1, id_casa_apostas)
+			pstmtquery_CA = conn.prepareStatement(CMDQuery_casa_apostas);
+			pstmtquery.setId(1, id_casa_apostas);
 
 
-			pstmtquery = conn.prepareStatement(CMDQuerySaldo)
+			pstmtquery = conn.prepareStatement(CMDQuerySaldo);
 			pstmtquery.setId(1, id_jogador)
 			result.next();
 			if (result.getInt("saldo") < valor_aposta) {
