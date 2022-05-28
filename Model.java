@@ -4,7 +4,7 @@ import java.util.Scanner;
 public class Model {
 
 	private static Connection getCon() throws SQLException {
-		return DriverManager.getConnection("jdbc:postgresql://10.62.73.22:5432/l3d9?user=l3d9&password=cryptogods&ssl=false");
+		return DriverManager.getConnection("jdbc:postgresql://10.62.73.22:5432/l3d4?user=l3d4&password=isigods&ssl=false");
 	}
 	public static void RegisterBookMaker(){
 		final String CMDST = "INSERT INTO casa_apostas(id,nome, NIPC, aposta_minima)" +
