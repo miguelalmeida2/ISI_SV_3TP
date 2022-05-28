@@ -22,14 +22,14 @@ class App
     private enum Option
     {
         Unknown,
-        Exit,
         newBetHouse,
         newPlayerAtBetHouse,
         newPlayerBet,
         suspendPlayer,
         totalPlayersInBetHouse,
         insertBetResolution,
-        manuelFernandesBets
+        showPlayersBets,
+        Exit
     }
     private static App __instance = null;
     private String __connectionString;
@@ -44,7 +44,7 @@ class App
         __dbMethods.put(Option.suspendPlayer, new DbWorker() {public void doWork() {Model.suspendPlayer();}});
         __dbMethods.put(Option.totalPlayersInBetHouse, new DbWorker() {public void doWork() {Model.totalPlayersInBetHouse();}});
         __dbMethods.put(Option.insertBetResolution, new DbWorker() {public void doWork() {Model.insertBetResolution();}});
-        __dbMethods.put(Option.manuelFernandesBets, new DbWorker() {public void doWork() {Model.manuelFernandesBets();}});
+        __dbMethods.put(Option.showPlayersBets, new DbWorker() {public void doWork() {Model.showPlayersBets();}});
         __dbMethods.put(Option.Exit , new DbWorker(){public void doWork() {Model.exit();}});
     }
 
