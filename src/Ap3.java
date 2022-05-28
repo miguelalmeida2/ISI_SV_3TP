@@ -3,7 +3,6 @@
  Introdução a Sistemas de Informação
  MP,ND, 2014-2022
  */
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -39,16 +38,16 @@ class App
     private App()
     {
         __dbMethods = new HashMap<Option,DbWorker>();
-        __dbMethods.put(Option.newBetHouse, new DbWorker() {public void doWork() {App.this.newBetHouse();}});
-        __dbMethods.put(Option.newPlayerAtBetHouse, new DbWorker() {public void doWork() {App.this.newPlayerAtBetHouse();}});
-        __dbMethods.put(Option.newPlayerBet, new DbWorker() {public void doWork() {App.this.newPlayerBet();}});
-        __dbMethods.put(Option.suspendPlayer, new DbWorker() {public void doWork() {App.this.suspendPlayer();}});
-        __dbMethods.put(Option.totalPlayersInBetHouse, new DbWorker() {public void doWork() {App.this.totalPlayersInBetHouse();}});
-        __dbMethods.put(Option.insertBetResolution, new DbWorker() {public void doWork() {App.this.insertBetResolution();}});
-        __dbMethods.put(Option.manuelFernandesBets, new DbWorker() {public void doWork() {App.this.manuelFernandesBets();}});
-        __dbMethods.put(Option.Exit, new DbWorker() {public void doWork() {App.this.Exit();}});
-
+        __dbMethods.put(Option.newBetHouse, new DbWorker() {public void doWork() {Model.newBetHouse();}});
+        __dbMethods.put(Option.newPlayerAtBetHouse, new DbWorker() {public void doWork() {Model.newPlayerAtBetHouse();}});
+        __dbMethods.put(Option.newPlayerBet, new DbWorker() {public void doWork() {Model.newPlayerBet();}});
+        __dbMethods.put(Option.suspendPlayer, new DbWorker() {public void doWork() {Model.suspendPlayer();}});
+        __dbMethods.put(Option.totalPlayersInBetHouse, new DbWorker() {public void doWork() {Model.totalPlayersInBetHouse();}});
+        __dbMethods.put(Option.insertBetResolution, new DbWorker() {public void doWork() {Model.insertBetResolution();}});
+        __dbMethods.put(Option.manuelFernandesBets, new DbWorker() {public void doWork() {Model.manuelFernandesBets();}});
+        __dbMethods.put(Option.Exit , new DbWorker(){public void doWork() {Model.exit();}});
     }
+
     public static App getInstance()
     {
         if(__instance == null)
@@ -82,9 +81,7 @@ class App
         {
             //nothing to do.
         }
-
         return option;
-
     }
     private final static void clearConsole() throws Exception
     {
@@ -94,11 +91,9 @@ class App
     }
     private void Login() throws java.sql.SQLException
     {
-
         Connection con = DriverManager.getConnection(getConnectionString());
         if(con != null)
             con.close();
-
     }
     public void Run() throws Exception
     {
@@ -113,13 +108,11 @@ class App
             {
                 __dbMethods.get(userInput).doWork();
                 System.in.read();
-
             }
             catch(NullPointerException ex)
             {
                 //Nothing to do. The option was not a valid one. Read another.
             }
-
         }while(userInput!=Option.Exit);
     }
 
@@ -137,7 +130,7 @@ public class Ap3
 {
     public static void main(String[] args) throws SQLException,Exception
     {
-        String url =  "jdbc:postgresql://10.62.73.22:5432/?user=l3n4&password=isigods&ssl=false";
+        String url =  "jdbc:postgresql://10.62.73.22:5432/?user=l3n4&password=isigods";
         App.getInstance().setConnectionString(url);
         App.getInstance().Run();
     }
