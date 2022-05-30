@@ -1,3 +1,4 @@
+//package isel.isi;
 /**
  ISEL - DEETC
  Introdução a Sistemas de Informação
@@ -41,10 +42,10 @@ class App
         __dbMethods.put(Option.newBetHouse, new DbWorker() {public void doWork() {Model.newBetHouse();}});
         __dbMethods.put(Option.newPlayerAtBetHouse, new DbWorker() {public void doWork() {Model.newPlayerAtBetHouse();}});
         __dbMethods.put(Option.newPlayerBet, new DbWorker() {public void doWork() {Model.newPlayerBet();}});
-        __dbMethods.put(Option.suspendPlayer, new DbWorker() {public void doWork() {Model.suspendPlayer();}});
-        __dbMethods.put(Option.totalPlayersInBetHouse, new DbWorker() {public void doWork() {Model.totalPlayersInBetHouse();}});
-        __dbMethods.put(Option.insertBetResolution, new DbWorker() {public void doWork() {Model.insertBetResolution();}});
-        __dbMethods.put(Option.showPlayersBets, new DbWorker() {public void doWork() {Model.showPlayersBets();}});
+       // __dbMethods.put(Option.suspendPlayer, new DbWorker() {public void doWork() {Model.suspendPlayer();}});
+       // __dbMethods.put(Option.totalPlayersInBetHouse, new DbWorker() {public void doWork() {Model.totalPlayersInBetHouse();}});
+       // __dbMethods.put(Option.insertBetResolution, new DbWorker() {public void doWork() {Model.insertBetResolution();}});
+       // __dbMethods.put(Option.showPlayersBets, new DbWorker() {public void doWork() {Model.showPlayersBets();}});
         __dbMethods.put(Option.Exit , new DbWorker(){public void doWork() {Model.exit();}});
     }
 
