@@ -1,17 +1,24 @@
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.util.HashMap;
 import java.util.Scanner;
-
 
 interface DbWorker
 {
     void doWork();
+}
+public class Ap3
+{
+    private static final String group = "l3n4";
+    private static final String pw = "isigods";
+
+    public static void main(String[] args) throws Exception
+    {
+        String url =  "jdbc:postgresql://10.62.73.22:5432/?user=" +group + "&password=" + pw;
+        App.getInstance().setConnectionString(url);
+        App.getInstance().Run();
+    }
 }
 
 class App
@@ -30,19 +37,19 @@ class App
     }
     private static App __instance = null;
     private String __connectionString;
-    private HashMap<Option,DbWorker> __dbMethods;
+    final private HashMap<Option,DbWorker> __dbMethods;
 
     private App()
     {
-        __dbMethods = new HashMap<Option,DbWorker>();
-        __dbMethods.put(Option.newBetHouse, new DbWorker() {public void doWork() {Model.newBetHouse();}});
-        __dbMethods.put(Option.newPlayerAtBetHouse, new DbWorker() {public void doWork() {Model.newPlayerAtBetHouse();}});
-        __dbMethods.put(Option.newPlayerBet, new DbWorker() {public void doWork() {Model.newPlayerBet();}});
-        __dbMethods.put(Option.suspendPlayer, new DbWorker() {public void doWork() {Model.suspendPlayer();}});
-        __dbMethods.put(Option.totalPlayersInBetHouse, new DbWorker() {public void doWork() {Model.totalPlayersInBetHouse();}});
-        __dbMethods.put(Option.insertBetResolution, new DbWorker() {public void doWork() {Model.insertBetResolution();}});
-        __dbMethods.put(Option.showPlayersBets, new DbWorker() {public void doWork() {Model.showPlayersBets();}});
-        __dbMethods.put(Option.Exit , new DbWorker(){public void doWork() {Model.exit();}});
+        __dbMethods = new HashMap<>();
+        __dbMethods.put(Option.newBetHouse, Model::newBetHouse);
+        __dbMethods.put(Option.newPlayerAtBetHouse, Model::newPlayerAtBetHouse);
+        __dbMethods.put(Option.newPlayerBet, Model::newPlayerBet);
+        __dbMethods.put(Option.suspendPlayer, Model::suspendPlayer);
+        __dbMethods.put(Option.totalPlayersInBetHouse, Model::totalPlayersInBetHouse);
+        __dbMethods.put(Option.insertBetResolution, Model::insertBetResolution);
+        __dbMethods.put(Option.showPlayersBets, Model::showPlayersBets);
+        __dbMethods.put(Option.Exit , Model::exit);
     }
 
     public static App getInstance()
@@ -80,7 +87,7 @@ class App
         }
         return option;
     }
-    private final static void clearConsole() throws Exception
+    private static void clearConsole()
     {
         for (int y = 0; y < 25; y++) //console is 80 columns and 25 lines
             System.out.println("\n");
@@ -95,7 +102,7 @@ class App
     public void Run() throws Exception
     {
         Login ();
-        Option userInput = Option.Unknown;
+        Option userInput;
         do
         {
             clearConsole();
@@ -104,7 +111,6 @@ class App
             try
             {
                 __dbMethods.get(userInput).doWork();
-                System.in.read();
             }
             catch(NullPointerException ex)
             {
@@ -123,12 +129,3 @@ class App
     }
 }
 
-public class Ap3
-{
-    public static void main(String[] args) throws SQLException,Exception
-    {
-        String url =  "jdbc:postgresql://10.62.73.22:5432/?user=l3n4&password=isigods";
-        App.getInstance().setConnectionString(url);
-        App.getInstance().Run();
-    }
-}
