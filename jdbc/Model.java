@@ -264,8 +264,6 @@ public class Model {
 			conn = getCon();
 			stmt = conn.createStatement();
 			result = stmt.executeQuery(jogadoresAtivosQuerie);
-			ResultSetMetaData md = result.getMetaData();
-			int columns = md.getColumnCount();
 			printTable(result);
 
 			pstmt = conn.prepareStatement(update);
