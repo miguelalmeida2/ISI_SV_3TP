@@ -38,10 +38,10 @@ class App
         __dbMethods.put(Option.newBetHouse, new DbWorker() {public void doWork() {Model.newBetHouse();}});
         __dbMethods.put(Option.newPlayerAtBetHouse, new DbWorker() {public void doWork() {Model.newPlayerAtBetHouse();}});
         __dbMethods.put(Option.newPlayerBet, new DbWorker() {public void doWork() {Model.newPlayerBet();}});
-       // __dbMethods.put(Option.suspendPlayer, new DbWorker() {public void doWork() {Model.suspendPlayer();}});
-       // __dbMethods.put(Option.totalPlayersInBetHouse, new DbWorker() {public void doWork() {Model.totalPlayersInBetHouse();}});
-       // __dbMethods.put(Option.insertBetResolution, new DbWorker() {public void doWork() {Model.insertBetResolution();}});
-       // __dbMethods.put(Option.showPlayersBets, new DbWorker() {public void doWork() {Model.showPlayersBets();}});
+        __dbMethods.put(Option.suspendPlayer, new DbWorker() {public void doWork() {Model.suspendPlayer();}});
+        __dbMethods.put(Option.totalPlayersInBetHouse, new DbWorker() {public void doWork() {Model.totalPlayersInBetHouse();}});
+        __dbMethods.put(Option.insertBetResolution, new DbWorker() {public void doWork() {Model.insertBetResolution();}});
+        __dbMethods.put(Option.showPlayersBets, new DbWorker() {public void doWork() {Model.showPlayersBets();}});
         __dbMethods.put(Option.Exit , new DbWorker(){public void doWork() {Model.exit();}});
     }
 
@@ -61,14 +61,14 @@ class App
         {
             System.out.println("\t\tBetHouse management");
             System.out.println();
-            System.out.println("0.\tNew BetHouse");
-            System.out.println("1.\tInsert new Player in BetHouse");
-            System.out.println("2.\tInsert new Bet from Player in BetHouse");
-            System.out.println("3.\tSuspend Player from Playing or Making Transactions");
-            System.out.println("4.\tShow the Total of Players inside BetHouse");
-            System.out.println("5.\tInsert Bet Resolution");
-            System.out.println("6.\tShow Manuel Fernandes's bets");
-            System.out.println("7.\tExit");
+            System.out.println("1.\tNew BetHouse");
+            System.out.println("2.\tInsert new Player in BetHouse");
+            System.out.println("3.\tInsert new Bet from Player in BetHouse");
+            System.out.println("4.\tSuspend Player from Playing or Making Transactions");
+            System.out.println("5.\tShow the Total of Players inside BetHouse");
+            System.out.println("6.\tInsert Bet Resolution");
+            System.out.println("7.\tShow Manuel Fernandes's bets");
+            System.out.println("8.\tExit");
             System.out.print(">");
             Scanner s = new Scanner(System.in);
             int result = s.nextInt();
