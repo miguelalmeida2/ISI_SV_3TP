@@ -74,7 +74,7 @@ class App
             System.out.println("4.\tSuspend Player from Playing or Making Transactions");
             System.out.println("5.\tShow the Total of Players inside BetHouse");
             System.out.println("6.\tInsert Bet Resolution");
-            System.out.println("7.\tShow Manuel Fernandes's bets");
+            System.out.println("7.\tShow Players bets");
             System.out.println("8.\tExit");
             System.out.print(">");
             Scanner s = new Scanner(System.in);
