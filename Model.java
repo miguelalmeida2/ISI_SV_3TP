@@ -224,7 +224,7 @@ public class Model {
 			}
 		}
 	}
-/*
+
 	public static void suspendPlayer() {
 
 		// Retornar os jogadores com estador ativo
@@ -232,24 +232,22 @@ public class Model {
 		final String update = "UPDATE jogador SET estado='suspenso' WHERE id=?";
 
 		Connection conn = null;
+		Statement stmt = null;
 		PreparedStatement pstmt = null;
-		PreparedStatement pstmtquery = null;
 		ResultSet result = null;
 
 		try {
 
 			conn = getCon();
-			pstmtquery = conn.createStatement();
-			result = pstmt.executeQuery(jogadoresAtivosQuerie);
+			stmt = conn.createStatement();
+			result = stmt.executeQuery(jogadoresAtivosQuerie);
 			ResultSetMetaData md = result.getMetaData();
 			int columns = md.getColumnCount();
 			printTable(result, columns);
 
 			pstmt = null;
-			pstmtquery = null;
 			result = null;
 
-			pstmtquery = conn.createStatement();
 			pstmt = conn.prepareStatement(update);
 			System.out.println("Id do utilizador que pretende remover?");
 			System.out.print("id: ");
@@ -366,9 +364,10 @@ public class Model {
 				} catch (SQLException ignored) {
 				}
 			}
-	}*/
+	}
 
 	public static void exit() {
+		exit();
 	}
 
 	public static void printTable(ResultSet rs, int columnsNumber) throws SQLException {

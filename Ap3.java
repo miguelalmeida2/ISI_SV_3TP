@@ -1,9 +1,4 @@
-//package isel.isi;
-/**
- ISEL - DEETC
- Introdução a Sistemas de Informação
- MP,ND, 2014-2022
- */
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -18,6 +13,7 @@ interface DbWorker
 {
     void doWork();
 }
+
 class App
 {
     private enum Option
