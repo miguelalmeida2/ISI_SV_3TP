@@ -1,23 +1,25 @@
-//package isel.isi;
 
 import java.sql.*;
 import java.util.*;
 
 public class Model {
-	
+
 	static Scanner in = new Scanner(System.in);
-	
+
 	private static Connection getCon() throws SQLException {
-		return DriverManager.getConnection("jdbc:postgresql://10.62.73.22:5432/?user=l3n4&password=isigods");
+		String jdbcURL = "jdbc:postgresql://10.62.73.22:5432/l3n4";
+		String username = "l3n4";
+		String password = "isigods";
+		return DriverManager.getConnection(jdbcURL, username, password);
 	}
-	
-	public static void newBetHouse(){
+
+	public static void newBetHouse() {
 		final String CMDST = "INSERT INTO casa_apostas(id,nome, NIPC, aposta_minima)" +
 				"VALUES (?, ?, ?, ?::decimal)";
 
 		Connection conn = null;
+		Statement stmt = null;
 		PreparedStatement pstmt = null;
-		PreparedStatement pstmtquery = null;
 		ResultSet result = null;
 
 		try {
@@ -34,42 +36,48 @@ public class Model {
 			System.out.println("aposta_minima");
 			float aposta_minima = key.nextFloat();
 			pstmt.setFloat(4, key.nextFloat());
-			if(aposta_minima <= 0.05) {
+			if (aposta_minima <= 0.05) {
 				System.out.println("Aposta minima must be greater than 0.05");
 				key.close();
 				return;
 			}
 			pstmt.executeQuery();
 			key.close();
-			
+
 		} catch (Exception err) {
 			System.out.println(err);
-			//Nothing to do. The option was not a valid one. Read another.
+			// Nothing to do. The option was not a valid one. Read another.
 		} finally {
 			try {
-				if (conn != null) conn.close();
-				if (pstmt != null) pstmt.close();
-				if (pstmtquery != null) pstmtquery.close();
-				if (result != null) result.close();
+				if (conn != null)
+					conn.close();
+				if (stmt != null)
+					pstmt.close();
+				if (pstmt != null)
+					pstmt.close();
+				if (result != null)
+					result.close();
 			} catch (SQLException ignored) {
 			}
 		}
 	}
 
 	public static void newPlayerAtBetHouse() {
-		//final String CMDQuery = "SELECT id FROM casa_apostas WHERE id = ?";
-		final String CMDST = "INSERT INTO jogador(id, email, nome, nickname, estado, data_nascimento, data_registo, morada, codigo_postal, localidade, casa_apostas)" +
+		final String CMDQuery = "SELECT id FROM casa_apostas WHERE id = ?";
+		final String CMDST = "INSERT INTO jogador(id, email, nome, nickname, estado, data_nascimento, data_registo, morada, codigo_postal, localidade, casa_apostas)"
+				+
 				"VALUES (?, ?, ?, ?, ?, ?::date, ?::date, ?, ?, ?, ?)";
 
 		Connection conn = null;
+		Statement stmt = null;
 		PreparedStatement pstmt = null;
-		PreparedStatement pstmtquery = null;
 		ResultSet result = null;
 
 		try {
 			conn = getCon();
 			pstmt = conn.prepareStatement(CMDST);
-			System.out.println("INSERT: id, email, nome, nickname, estado, data_nascimento, data_registo, morada, codigo_postal, localidade, casa_apostas");
+			System.out.println(
+					"INSERT: id, email, nome, nickname, estado, data_nascimento, data_registo, morada, codigo_postal, localidade, casa_apostas");
 			java.util.Scanner key = new Scanner(System.in);
 			System.out.println("id");
 			pstmt.setString(1, key.nextLine());
@@ -81,13 +89,13 @@ public class Model {
 			pstmt.setString(4, key.nextLine());
 			System.out.println("estado");
 			String estado = key.nextLine();
-			if(!estado.matches("ativo|suspenso|autoexcluído")) {
+			if (!estado.matches("ativo|suspenso|autoexcluído")) {
 				key.close();
 				throw new Exception("Estado must be ativo or suspenso or autoexcluído");
 			}
 			pstmt.setString(5, estado);
 			System.out.println("data_nascimento");
-			//String data_nascimento = key.nextLine();
+			// String data_nascimento = key.nextLine();
 			pstmt.setString(6, key.nextLine());
 			System.out.println("data_registo");
 			pstmt.setString(7, key.nextLine());
@@ -101,50 +109,62 @@ public class Model {
 			String casa_apostas = key.nextLine();
 
 			/*
-			pstmtquery = conn.prepareStatement(CMDQuery)
-			pstmtquery.setString(1,casa_apostas)
-			result = pstmtquery.executeQuery()
-			result.next();
-			if( result.getString("id").isEmpty()){
-				throw new Exception("That casa_apostas dosen't exist")
-			}*/
-			pstmt.setString(11,casa_apostas );
+			 * pstmtquery = conn.prepareStatement(CMDQuery)
+			 * pstmtquery.setString(1,casa_apostas)
+			 * result = pstmtquery.executeQuery()
+			 * result.next();
+			 * if( result.getString("id").isEmpty()){
+			 * throw new Exception("That casa_apostas dosen't exist")
+			 * }
+			 */
+			pstmt.setString(11, casa_apostas);
 			pstmt.executeQuery();
 			key.close();
 
 		} catch (Exception err) {
 			System.out.println(err);
-			//Nothing to do. The option was not a valid one. Read another.
+			// Nothing to do. The option was not a valid one. Read another.
 		} finally {
 			try {
-				if (conn != null) conn.close();
-				if (pstmt != null) pstmt.close();
-				if (pstmtquery != null) pstmtquery.close();
-				if (result != null) result.close();
+				if (conn != null)
+					conn.close();
+				if (pstmt != null)
+					pstmt.close();
+				if (pstmt != null)
+					pstmt.close();
+				if (result != null)
+					result.close();
 			} catch (SQLException ignored) {
 			}
 		}
 	}
 
-
 	public static void newPlayerBet() {
 		final String CMDQuery_casa_apostas = "SELECT aposta_minima FROM casa_apostas WHERE id = ?";
-		final String CMDQuerySaldo = "SELECT   coalesce(jogador.id,levantamento.jogador, deposito.jogador, aposta.jogador, resultado.jogador) as Jogador_Id,  coalesce(max(deposito.depo), 0.0) - coalesce(max(levantamento.leva), 0.0) - coalesce(max(aposta.apos), 0.0) + coalesce(max(resultado.res), 0.0)  as saldo \n" +
+		final String CMDQuerySaldo = "SELECT   coalesce(jogador.id,levantamento.jogador, deposito.jogador, aposta.jogador, resultado.jogador) as Jogador_Id,  coalesce(max(deposito.depo), 0.0) - coalesce(max(levantamento.leva), 0.0) - coalesce(max(aposta.apos), 0.0) + coalesce(max(resultado.res), 0.0)  as saldo \n"
+				+
 				"from\t(select id from jogador where estado = 'activo' and id = ?) as jogador\n" +
 				"\t\tleft outer join(\n" +
-				"\t\tSELECT t.jogador,SUM(t.valor) as leva FROM transacao t JOIN bancaria b ON (t.numero = b.transacao) WHERE b.operacao = 'levantamento' group by t.jogador order by t.jogador) as levantamento\n" +
+				"\t\tSELECT t.jogador,SUM(t.valor) as leva FROM transacao t JOIN bancaria b ON (t.numero = b.transacao) WHERE b.operacao = 'levantamento' group by t.jogador order by t.jogador) as levantamento\n"
+				+
 				"\t\ton( jogador.id = levantamento.jogador)\n" +
 				"\t\tfull outer join( \n" +
-				"\t\tSELECT   t.jogador ,SUM(t.valor) as depo FROM transacao t JOIN bancaria b2 ON (t.numero = b2.transacao)  WHERE b2.operacao = 'depósito' group by t.jogador order by t.jogador) as deposito\n" +
+				"\t\tSELECT   t.jogador ,SUM(t.valor) as depo FROM transacao t JOIN bancaria b2 ON (t.numero = b2.transacao)  WHERE b2.operacao = 'depósito' group by t.jogador order by t.jogador) as deposito\n"
+				+
 				"\t\ton (greatest (jogador.id,levantamento.jogador) = deposito.jogador) \n" +
 				"\t\tfull outer join( \n" +
-				"\t\tSELECT  t.jogador,SUM(valor) as apos FROM transacao t JOIN aposta a ON (t.numero = a.transacao) group by t.jogador order by t.jogador)  as aposta\n" +
+				"\t\tSELECT  t.jogador,SUM(valor) as apos FROM transacao t JOIN aposta a ON (t.numero = a.transacao) group by t.jogador order by t.jogador)  as aposta\n"
+				+
 				"\t\ton ( greatest(levantamento.jogador,jogador.id, deposito.jogador) = aposta.jogador)\n" +
 				"\t\tfull outer join(\n" +
-				"\t\tSELECT  t.jogador, SUM(r.valor) as res FROM transacao t JOIN resolucao r ON (t.numero = r.aposta and r.resultado = 'vitória') group by t.jogador order by t.jogador) as resultado\n" +
-				"\t\ton(greatest(jogador.id,deposito.jogador,levantamento.jogador,aposta.jogador) = resultado.jogador)\n" +
-				"\t\tgroup by  jogador.id, levantamento.jogador, deposito.jogador , aposta.jogador, resultado.jogador\n" +
-				"\t\torder by  jogador.id, levantamento.jogador, deposito.jogador , aposta.jogador, resultado.jogador asc \n" +
+				"\t\tSELECT  t.jogador, SUM(r.valor) as res FROM transacao t JOIN resolucao r ON (t.numero = r.aposta and r.resultado = 'vitória') group by t.jogador order by t.jogador) as resultado\n"
+				+
+				"\t\ton(greatest(jogador.id,deposito.jogador,levantamento.jogador,aposta.jogador) = resultado.jogador)\n"
+				+
+				"\t\tgroup by  jogador.id, levantamento.jogador, deposito.jogador , aposta.jogador, resultado.jogador\n"
+				+
+				"\t\torder by  jogador.id, levantamento.jogador, deposito.jogador , aposta.jogador, resultado.jogador asc \n"
+				+
 				"\t\tlimit 1";
 
 		final String CMDST_Insert = "BEGIN transaction;\n " +
@@ -210,16 +230,19 @@ public class Model {
 			pstmt.executeQuery();
 			key.close();
 
-
-		}catch (Exception err) {
+		} catch (Exception err) {
 			System.out.println(err);
-			//Nothing to do. The option was not a valid one. Read another.
+			// Nothing to do. The option was not a valid one. Read another.
 		} finally {
 			try {
-				if (conn != null) conn.close();
-				if (pstmt != null) pstmt.close();
-				if (pstmtquery != null) pstmtquery.close();
-				if (result != null) result.close();
+				if (conn != null)
+					conn.close();
+				if (pstmt != null)
+					pstmt.close();
+				if (pstmtquery != null)
+					pstmtquery.close();
+				if (result != null)
+					result.close();
 			} catch (SQLException ignored) {
 			}
 		}
@@ -243,10 +266,7 @@ public class Model {
 			result = stmt.executeQuery(jogadoresAtivosQuerie);
 			ResultSetMetaData md = result.getMetaData();
 			int columns = md.getColumnCount();
-			printTable(result, columns);
-
-			pstmt = null;
-			result = null;
+			printTable(result);
 
 			pstmt = conn.prepareStatement(update);
 			System.out.println("Id do utilizador que pretende remover?");
@@ -261,10 +281,10 @@ public class Model {
 			try {
 				if (conn != null)
 					conn.close();
+				if (stmt != null)
+					stmt.close();
 				if (pstmt != null)
 					pstmt.close();
-				if (pstmtquery != null)
-					pstmtquery.close();
 				if (result != null)
 					result.close();
 			} catch (SQLException ignored) {
@@ -279,25 +299,24 @@ public class Model {
 		final String countQuerie = "SELECT count(casa_apostas) FROM jogador WHERE casa_apostas=?";
 
 		Connection conn = null;
+		Statement stmt = null;
 		PreparedStatement pstmt = null;
-		PreparedStatement pstmtquery = null;
 		ResultSet result = null;
 
 		try {
 
 			conn = getCon();
-			pstmt = conn.prepareStatement(getBetHousesQuerie);
-			result = pstmt.executeQuery();
+			stmt = conn.createStatement();
+			result = stmt.executeQuery(getBetHousesQuerie);
 			ResultSetMetaData md = result.getMetaData();
 			int columns = md.getColumnCount();
-			printTable(result, columns);
+			printTable(result);
 
+			stmt = null;
 			pstmt = null;
-			pstmtquery = null;
 			result = null;
 
-			pstmtquery = conn.prepareStatement(countQuerie);
-			pstmt = conn.prepareStatement();
+			pstmt = conn.prepareStatement(countQuerie);
 			System.out.println("Id da Casa de Apostas que pretende ter o nº de utilizadores?");
 			System.out.print("Id: ");
 			pstmt.setInt(1, in.nextInt());
@@ -312,10 +331,10 @@ public class Model {
 			try {
 				if (conn != null)
 					conn.close();
+				if (stmt != null)
+					stmt.close();
 				if (pstmt != null)
 					pstmt.close();
-				if (pstmtquery != null)
-					pstmtquery.close();
 				if (result != null)
 					result.close();
 			} catch (SQLException ignored) {
@@ -327,56 +346,66 @@ public class Model {
 	}
 
 	public static void showPlayersBets() {
-			// Querie para mostrar as Apostas de um dado Jogador
-			final String getPlayersBetsQuerie = "select distinct  t.numero as Aposta_Num,tipo, odd, descricao FROM aposta as a JOIN transacao as t ON (a.transacao = t.numero) WHERE t.jogador IN(SELECT id FROM jogador j WHERE j.nome = ?) GROUP BY t.numero, a.tipo, a .odd, a.descricao";
+		// Querie para mostrar as Apostas de um dado Jogador
+		final String getPlayersBetsQuerie = "select distinct  t.numero as Aposta_Num,tipo, odd, descricao FROM aposta as a JOIN transacao as t ON (a.transacao = t.numero) WHERE t.jogador IN(SELECT id FROM jogador j WHERE j.nome = ?) GROUP BY t.numero, a.tipo, a .odd, a.descricao";
 
-			Connection conn = null;
-			PreparedStatement pstmt = null;
-			PreparedStatement pstmtquery = null;
-			ResultSet result = null;
-	
+		Connection conn = null;
+		Statement stmt = null;
+		PreparedStatement pstmt = null;
+		ResultSet result = null;
+
+		try {
+			conn = getCon();
+			pstmt = conn.prepareStatement(getPlayersBetsQuerie);
+			System.out.println("Qual é o Nome do Jogador do qual quer ver as Apostas?");
+			System.out.print("Nome: ");
+			pstmt.setString(1, in.nextLine());
+			pstmt.execute();
+
+			printTable(result);
+
+		} catch (Exception err) {
+			System.out.println(err);
+			// Nothing to do. The option was not a valid one. Read another.
+		} finally {
 			try {
-				conn = getCon();
-				pstmtquery = conn.createStatement();
-				pstmt = pstmt.prepareStatement(getPlayersBetsQuerie);
-				System.out.println("Qual é o Nome do Jogador do qual quer ver as Apostas?");
-				System.out.print("Nome: ");
-				pstmt.setString(1, in.nextLine());
-				pstmt.execute();
-
-				ResultSetMetaData md = result.getMetaData();
-				int columns = md.getColumnCount();
-				printTable(result, columns);
-	
-			} catch (Exception err) {
-				System.out.println(err);
-				// Nothing to do. The option was not a valid one. Read another.
-			} finally {
-				try {
-					if (conn != null)
-						conn.close();
-					if (pstmt != null)
-						pstmt.close();
-					if (pstmtquery != null)
-						pstmtquery.close();
-					if (result != null)
-						result.close();
-				} catch (SQLException ignored) {
-				}
-			}
-	}
-
-	public static void exit() {
-		exit();
-	}
-
-	public static void printTable(ResultSet rs, int columnsNumber) throws SQLException {
-		while (rs.next()) {
-			// Print one row
-			for (int i = 1; i <= columnsNumber; i++) {
-				System.out.print(rs.getString(i) + " "); // Print one element of a row
+				if (conn != null)
+					conn.close();
+				if (stmt != null)
+					stmt.close();
+				if (pstmt != null)
+					pstmt.close();
+				if (result != null)
+					result.close();
+			} catch (SQLException ignored) {
 			}
 		}
 	}
 
+	public static void exit() {
+		System.exit(0);
+	}
+
+	private static void printTable(ResultSet rs) throws SQLException {
+		final int TAB_SIZE = 8;
+		ResultSetMetaData meta = rs.getMetaData();
+		int columnsCount = meta.getColumnCount();
+		StringBuffer sep = new StringBuffer("");
+
+		// header
+		for (int i = 1; i <= columnsCount; i++) {
+			System.out.print(meta.getColumnLabel(i));
+			System.out.print("\t");
+		}
+		System.out.println(sep);
+		// Step 4 - Get result
+		while (rs.next()) {
+			// results print
+			for (int i = 1; i <= columnsCount; i++) {
+				System.out.print(rs.getObject(i));
+				System.out.print("\t");
+			}
+			System.out.println();
+		}
+	}
 }
