@@ -269,7 +269,7 @@ public class Model {
 			}
 		}
 	}
-	/*
+
 	public static void totalPlayersInBetHouse() {
 		// Querie para mostrar casas de apostas
 		final String getBetHousesQuerie = "SELECT id,nome FROM casa_apostas";
@@ -286,21 +286,20 @@ public class Model {
 			conn = getCon();
 			stmt = conn.createStatement();
 			result = stmt.executeQuery(getBetHousesQuerie);
-			ResultSetMetaData md = result.getMetaData();
-			int columns = md.getColumnCount();
 			printTable(result);
+			System.in.read();
 
-			stmt = null;
-			pstmt = null;
 			result = null;
 
 			pstmt = conn.prepareStatement(countQuerie);
 			System.out.println("Id da Casa de Apostas que pretende ter o nº de utilizadores?");
 			System.out.print("Id: ");
 			pstmt.setInt(1, in.nextInt());
-			pstmt.execute();
+			result = pstmt.executeQuery();
 			System.out.println("\nNúmero de Jogadores nessa Casa de Apostas = ");
-			System.out.print(result.getInt(1));
+			result.next();
+			System.out.print(result.getInt("count") + "\n");
+			System.in.read();
 
 		} catch (Exception err) {
 			System.out.println(err);
@@ -328,7 +327,6 @@ public class Model {
 		final String getPlayersBetsQuerie = "select distinct  t.numero as Aposta_Num,tipo, odd, descricao FROM aposta as a JOIN transacao as t ON (a.transacao = t.numero) WHERE t.jogador IN(SELECT id FROM jogador j WHERE j.nome = ?) GROUP BY t.numero, a.tipo, a .odd, a.descricao";
 
 		Connection conn = null;
-		Statement stmt = null;
 		PreparedStatement pstmt = null;
 		ResultSet result = null;
 
@@ -338,9 +336,10 @@ public class Model {
 			System.out.println("Qual é o Nome do Jogador do qual quer ver as Apostas?");
 			System.out.print("Nome: ");
 			pstmt.setString(1, in.nextLine());
-			pstmt.execute();
+			result = pstmt.executeQuery();
 
 			printTable(result);
+			System.in.read();
 
 		} catch (Exception err) {
 			System.out.println(err);
@@ -349,8 +348,6 @@ public class Model {
 			try {
 				if (conn != null)
 					conn.close();
-				if (stmt != null)
-					stmt.close();
 				if (pstmt != null)
 					pstmt.close();
 				if (result != null)
@@ -358,24 +355,22 @@ public class Model {
 			} catch (SQLException ignored) {
 			}
 		}
-	}*/
+	}
 
 	public static void exit() {
 		System.exit(0);
 	}
 
 	private static void printTable(ResultSet rs) throws SQLException {
-		final int TAB_SIZE = 8;
 		ResultSetMetaData meta = rs.getMetaData();
 		int columnsCount = meta.getColumnCount();
-		StringBuffer sep = new StringBuffer("");
 
 		// header
 		for (int i = 1; i <= columnsCount; i++) {
 			System.out.print(meta.getColumnLabel(i));
 			System.out.print("\t");
 		}
-		System.out.println(sep);
+		System.out.print("\n");
 		// Step 4 - Get result
 		while (rs.next()) {
 			// results print
