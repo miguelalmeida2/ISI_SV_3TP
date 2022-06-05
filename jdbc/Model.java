@@ -10,25 +10,27 @@ import java.time.format.DateTimeParseException;
 import java.util.*;
 
 public class Model {
+	public static Scanner input = new Scanner(System.in);
+	private static final Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+	private static final int CURRENT_YEAR = cal.get(Calendar.YEAR);
+	private static final int CURRENT_MONTH = cal.get(Calendar.MONTH)+1; //STARTS COUNTING ON 0 = JAN
+	private static final String[] INTERVALS = {"year","month","week"};
 
-	static Scanner in = new Scanner(System.in);
 
 	private static Connection getCon() throws SQLException {
 		String jdbcURL = "jdbc:postgresql://10.62.73.22:5432/l3n4";
 		String username = "l3n4";
 		String password = "isigods";
-		return DriverManager.getConnection(jdbcURL, username, password);
-		// return
-		// DriverManager.getConnection("jdbc:postgresql://10.62.73.22:5432/?user=l3n4&password=isigods");
+		return  DriverManager.getConnection(jdbcURL, username, password);
+		//return DriverManager.getConnection("jdbc:postgresql://10.62.73.22:5432/?user=l3n4&password=isigods");
 	}
 
-	public static void newBetHouse() {
+	public static void newBetHouse(){
 		final String CMDST = "Begin;\n" +
 				"INSERT INTO casa_apostas(id,nome, NIPC, aposta_minima)\n" +
 				"\tVALUES ((select id from casa_apostas ORDER BY id DESC LIMIT 1) + 1, ?, ?, ?::decimal);\n" +
 				"INSERT INTO administrador(id,email,nome,perfil,casa_apostas)\n" +
-				"\tValues((select id from administrador ORDER BY id DESC LIMIT 1) +1, ? , ?, 'administrador' , (select id from casa_apostas ORDER BY id DESC LIMIT 1) );\n"
-				+
+				"\tValues((select id from administrador ORDER BY id DESC LIMIT 1) +1, ? , ?, 'administrador' , (select id from casa_apostas ORDER BY id DESC LIMIT 1) );\n" +
 				"COMMIT TRANSACTION;\n";
 
 		Connection conn = null;
@@ -44,16 +46,16 @@ public class Model {
 
 			System.out.println("nome:");
 			String nomeCasaApostas = key.nextLine();
-			pstmt.setString(1, nomeCasaApostas);
+			pstmt.setString(1, nomeCasaApostas );
 
 			System.out.println("NIPC:");
 			String NIPC = key.nextLine();
-			while (NIPC.length() != 9) {
+			while(NIPC.length() != 9){
 				System.out.println("NIPC invalido, insira um número com 9 digitos");
 				NIPC = key.nextLine();
 			}
-			pstmt.setString(2, NIPC);
-			// pstmt.setString(2, "123456789" );
+			pstmt.setString(2, NIPC );
+			//pstmt.setString(2, "123456789" );
 
 			System.out.println("aposta_minima:");
 			float aposta_minima = Float.parseFloat(key.nextLine());
@@ -64,6 +66,7 @@ public class Model {
 
 			pstmt.setFloat(3, aposta_minima);
 
+
 			System.out.println("É necessario criar um admin para a casa de apostas!\n" +
 					"Por favor insira o nome e o email para o admin\n");
 			System.out.print("nome admin:");
@@ -71,67 +74,99 @@ public class Model {
 			System.out.print("email admin:");
 			String emailAdmin = key.nextLine();
 			String auxNome = nomeCasaApostas.toLowerCase().replace(" ", "");
-			while (!emailAdmin.contains("@" + auxNome + ".")) {
-				System.out
-						.println("Email do admin tem que ter o nome da casa de apostas! e.g ..." + "@" + auxNome + ".");
+			while(!emailAdmin.contains("@"+auxNome+".")){
+				System.out.println("Email do admin tem que ter o nome da casa de apostas! e.g ..."+ "@"+auxNome+".");
 				emailAdmin = key.nextLine();
 			}
 			pstmt.setString(4, emailAdmin);
+
+
 
 			pstmt.executeQuery();
 			key.close();
 
 		} catch (Exception err) {
 			System.out.println(err);
-			// Nothing to do. The option was not a valid one. Read another.
+			//Nothing to do. The option was not a valid one. Read another.
 		} finally {
 			try {
-				if (conn != null)
-					conn.close();
-				if (pstmt != null)
-					pstmt.close();
-				if (pstmtquery != null)
-					pstmtquery.close();
-				if (result != null)
-					result.close();
+				if (conn != null) conn.close();
+				if (pstmt != null) pstmt.close();
+				if (pstmtquery != null) pstmtquery.close();
+				if (result != null) result.close();
 			} catch (SQLException ignored) {
 			}
 		}
 	}
 
-	public static boolean isValidFormat(String format, String value, Locale locale) {
-		LocalDateTime ldt = null;
-		DateTimeFormatter fomatter = DateTimeFormatter.ofPattern(format, locale);
-
-		try {
-			ldt = LocalDateTime.parse(value, fomatter);
-			String result = ldt.format(fomatter);
-			return result.equals(value);
-		} catch (DateTimeParseException e) {
-			try {
-				LocalDate ld = LocalDate.parse(value, fomatter);
-				String result = ld.format(fomatter);
-				return result.equals(value);
-			} catch (DateTimeParseException exp) {
-				try {
-					LocalTime lt = LocalTime.parse(value, fomatter);
-					String result = lt.format(fomatter);
-					return result.equals(value);
-				} catch (DateTimeParseException e2) {
-
-				}
-			}
+	//Funções para confriamr as datas
+	private static String getDate(){
+			System.out.println("Ano");
+			int year = checkBetweenBoundaries(1950,2100);
+			System.out.println("Mês: \nEntre 1 e 12 ");
+			int month;
+			if(year == CURRENT_YEAR ) month = checkBetweenBoundaries(CURRENT_MONTH, 12);
+			else month = checkBetweenBoundaries(1, 12);
+			int lastdaymonth = lastDayMonth(month, year);
+			System.out.println("Dia: " + "\nEntre 1 e " + lastdaymonth);
+			int day = checkBetweenBoundaries(1, lastdaymonth);
+			return getStringDate(year,month,day);
 		}
 
-		return false;
-	}
+		//obter ultimo dia de cada mês
+		public static int lastDayMonth(int month, int year){
+			int lastDay = -1;
+			int[] lastDayArray = {-1, 31, -1, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+			if(month == 2) {
+				Calendar testCal = Calendar.getInstance();
+				testCal.set(Calendar.YEAR, year);
+				if (cal.getActualMaximum(Calendar.DAY_OF_YEAR) > 365) lastDay = 29;
+				else lastDay = 28;
+			}
+			if(month != 2) lastDay = lastDayArray[month];
+			return lastDay;
+		}
+
+		//passar dados de data para uma String dde formato Date de PSQL
+		public static String getStringDate(int year, int month, int day){
+			String date = year + "-";
+			if(checkIfBelowMax(month,10)) date += month + "-";
+			else date += "0" + month + "-";
+			if(checkIfBelowMax(day,10)) date += day;
+			else date += "0" + day;
+			return date;
+		}
+
+		public static int checkBetweenBoundaries(int min, int max) {
+			int var;
+			do{var = getValInt();
+			}while(var < min || var > max);
+			return var;
+		}
+
+		public static boolean checkIfBelowMax(int var, int max) {return var >= max;}
+
+		private static int getValInt(){
+			System.out.print("> ");
+			int val = input.nextInt();
+			//consume rest of line
+			input.nextLine();
+			return val;
+		}
+
+		//obter valores inseridos pelo utilizador
+		private static String getValString(){
+			System.out.print("> ");
+			return input.nextLine();
+		}
+
+
 
 	public static void newPlayerAtBetHouse() {
 		final String CMDQuery = "SELECT email FROM administrador where casa_apostas = ?";
 		final String CMDQueryNickname = "SELECT nickname FROM jogador where casa_apostas = ?";
 		final String CMDQueryEmail = "SELECT email FROM jogador where casa_apostas = ?";
-		final String CMDST = "INSERT INTO jogador(id, email, nome, nickname, estado, data_nascimento, data_registo, morada, codigo_postal, localidade, casa_apostas)"
-				+
+		final String CMDST = "INSERT INTO jogador(id, email, nome, nickname, estado, data_nascimento, data_registo, morada, codigo_postal, localidade, casa_apostas)" +
 				"VALUES ((select id from jogador ORDER BY id DESC LIMIT 1) +1, ?, ?, ?, ?, ?::Date, ?::date , ?, ?, ?, ?)";
 
 		Connection conn = null;
@@ -144,32 +179,46 @@ public class Model {
 		try {
 			conn = getCon();
 			pstmt = conn.prepareStatement(CMDST);
-			System.out.println(
-					"INSERT: casa_apostas, email, nome, nickname, estado, data_nascimento, data_registo, morada, codigo_postal, localidade\n");
+
 			java.util.Scanner key = new Scanner(System.in);
+
 
 			stmt = conn.createStatement();
 			result = stmt.executeQuery("SELECT id, nome FROM casa_apostas");
 			ResultSetMetaData md = result.getMetaData();
-			int columns = md.getColumnCount();
 			System.out.println("Casas de apostas disponiveis: \n");
-			printTable(result);
+
+			LinkedList[] table= printTable(result);
+			while(table[0].size() == 0) {
+				System.out.print("\nNão existem casa de apostas disponiveis" +
+						"\nPor favor crie casa de apostas e tente outra vez! \n" +
+						"\n Press 1 to exit --> ");
+				int exit = Integer.parseInt(input.nextLine());
+				if(exit == 1) return;
+			}
 			System.out.print("\nEscolha o id da casa de apostas pretendida:");
+
 			int id_casa_apostas = Integer.parseInt(key.nextLine());
+			while (!table[0].contains(String.valueOf(id_casa_apostas))) {
+				System.out.print("Id invalido, escolha um dentro da lista acima: ");
+				id_casa_apostas = Integer.parseInt(key.nextLine());
+			}
 			pstmt.setInt(10, id_casa_apostas);
+
+			System.out.println("INSERT: email, nome, nickname, estado, data_nascimento, data_registo, morada, codigo_postal, localidade\n");
 
 			System.out.println("email");
 			String email = key.nextLine();
-			pstmtquery = conn.prepareStatement(CMDQuery, ResultSet.TYPE_SCROLL_SENSITIVE,
+			pstmtquery = conn.prepareStatement(CMDQuery,ResultSet.TYPE_SCROLL_SENSITIVE,
 					ResultSet.CONCUR_UPDATABLE);
 			pstmtquery.setInt(1, id_casa_apostas);
 			result2 = pstmtquery.executeQuery();
 
+
 			while (result2.next()) {
 				String testEmail = result2.getString("email");
 				if (testEmail.equals(email)) {
-					System.out.println("O email " + email
-							+ " corresponde a um administrador e administradores não podem ser jogadores!");
+					System.out.println("O email " + email + " corresponde a um administrador e administradores não podem ser jogadores!");
 					System.out.print("Escolha outro email: ");
 					email = key.nextLine();
 					result2.beforeFirst();
@@ -181,6 +230,8 @@ public class Model {
 			pstmtquery.setInt(1, id_casa_apostas);
 			result2 = pstmtquery.executeQuery();
 
+
+
 			while (result2.next())
 				if (result2.getString("email").equals(email)) {
 					System.out.print(email + " já está a ser usado!\nEscolha outro email: ");
@@ -188,11 +239,14 @@ public class Model {
 					result2.beforeFirst();
 				}
 
+
+
 			pstmt.setString(1, email);
-			// pstmt.setString(2, "laura@gmail.com");
+			//pstmt.setString(2, "laura@gmail.com");
 			System.out.println("nome");
 			pstmt.setString(2, key.nextLine());
-			// pstmt.setString(2, "laura");
+			//pstmt.setString(2, "laura");
+
 
 			System.out.println("nickname");
 			String nickname = key.nextLine();
@@ -201,90 +255,78 @@ public class Model {
 			pstmtquery.setInt(1, id_casa_apostas);
 			result2 = pstmtquery.executeQuery();
 
+
 			while (result2.next())
 				if (result2.getString("nickname").equals(nickname)) {
 					System.out.print(nickname + " já está a ser usado!\nEscolha outro nickname: ");
 					nickname = key.nextLine();
 					result2.beforeFirst();
 				}
-			pstmt.setString(3, nickname);
+			pstmt.setString(3,nickname );
+
 
 			System.out.println("estado");
-			// pstmt.setString(4, "activo");
+			//pstmt.setString(4, "activo");
 			String estado = key.nextLine();
-			while (!estado.matches("activo|suspenso|autoexcluído")) {
+			while(!estado.matches("activo|suspenso|autoexcluído")) {
 				System.out.println("Estado must be activo or suspenso or autoexcluído");
 				estado = key.nextLine();
 			}
 			pstmt.setString(4, estado);
 
 			System.out.println("data_nascimento");
-			String data = key.nextLine();
-			if (!isValidFormat("dd-MM-yyyy", data, Locale.getDefault()))
-				System.out.println("ERRRO");
-			pstmt.setDate(5, Date.valueOf(key.nextLine()));
+			String data_nasc = getDate();
+			pstmt.setDate(5, Date.valueOf(data_nasc));
 			System.out.println("data_registo");
-			// Date in18years = Date.valueOf(key.nextLine()).
-			pstmt.setDate(6, Date.valueOf(key.nextLine()));
+			String data_res = getDate();
+			pstmt.setDate(6, Date.valueOf(data_res));
 			System.out.println("morada");
-			// pstmt.setString(7, key.nextLine());
+			//pstmt.setString(7, key.nextLine());
 			pstmt.setString(7, "rua");
 			System.out.println("codigo_postal");
-			// pstmt.setInt(8, Integer.parseInt(key.nextLine()));
+			//pstmt.setInt(8, Integer.parseInt(key.nextLine()));
 			pstmt.setInt(8, 1170110);
 			System.out.println("localidade");
-			// pstmt.setString(9, key.nextLine());
+			//pstmt.setString(9, key.nextLine());
 			pstmt.setString(9, "lisboa");
+
 
 			pstmt.executeQuery();
 			key.close();
 
 		} catch (Exception err) {
 			System.out.println(err);
-			// Nothing to do. The option was not a valid one. Read another.
+			//Nothing to do. The option was not a valid one. Read another.
 		} finally {
 			try {
-				if (conn != null)
-					conn.close();
-				if (pstmt != null)
-					pstmt.close();
-				if (pstmtquery != null)
-					pstmtquery.close();
-				if (result != null)
-					result.close();
+				if (conn != null) conn.close();
+				if (pstmt != null) pstmt.close();
+				if (pstmtquery != null) pstmtquery.close();
+				if (result != null) result.close();
 			} catch (SQLException ignored) {
 			}
 		}
 	}
 
+
 	public static void newPlayerBet() {
 		final String CMDQuery_CA_minimo = "SELECT aposta_minima FROM casa_apostas WHERE id = ?";
-		final String CMDQueryEstadoJogador = "select estado from jogador where id = ?";
-		final String CMDQuery_CA_jogador = "SELECT casa_apostas from jogador where id = ?";
-		final String CMDQuerySaldo = "SELECT   coalesce(jogador.id,levantamento.jogador, deposito.jogador, aposta.jogador, resultado.jogador) as Jogador_Id,  coalesce(max(deposito.depo), 0.0) - coalesce(max(levantamento.leva), 0.0) - coalesce(max(aposta.apos), 0.0) + coalesce(max(resultado.res), 0.0)  as saldo \n"
-				+
+		final String CMDQuerySaldo = "SELECT   coalesce(jogador.id,levantamento.jogador, deposito.jogador, aposta.jogador, resultado.jogador) as Jogador_Id,  coalesce(max(deposito.depo), 0.0) - coalesce(max(levantamento.leva), 0.0) - coalesce(max(aposta.apos), 0.0) + coalesce(max(resultado.res), 0.0)  as saldo \n" +
 				"from\t(select id from jogador where estado = 'activo' and id = ?) as jogador\n" +
 				"\t\tleft outer join(\n" +
-				"\t\tSELECT t.jogador,SUM(t.valor) as leva FROM transacao t JOIN bancaria b ON (t.numero = b.transacao) WHERE b.operacao = 'levantamento' group by t.jogador order by t.jogador) as levantamento\n"
-				+
+				"\t\tSELECT t.jogador,SUM(t.valor) as leva FROM transacao t JOIN bancaria b ON (t.numero = b.transacao) WHERE b.operacao = 'levantamento' group by t.jogador order by t.jogador) as levantamento\n" +
 				"\t\ton( jogador.id = levantamento.jogador)\n" +
 				"\t\tfull outer join( \n" +
-				"\t\tSELECT   t.jogador ,SUM(t.valor) as depo FROM transacao t JOIN bancaria b2 ON (t.numero = b2.transacao)  WHERE b2.operacao = 'depósito' group by t.jogador order by t.jogador) as deposito\n"
-				+
+				"\t\tSELECT   t.jogador ,SUM(t.valor) as depo FROM transacao t JOIN bancaria b2 ON (t.numero = b2.transacao)  WHERE b2.operacao = 'depósito' group by t.jogador order by t.jogador) as deposito\n" +
 				"\t\ton (greatest (jogador.id,levantamento.jogador) = deposito.jogador) \n" +
 				"\t\tfull outer join( \n" +
-				"\t\tSELECT  t.jogador,SUM(valor) as apos FROM transacao t JOIN aposta a ON (t.numero = a.transacao) group by t.jogador order by t.jogador)  as aposta\n"
-				+
+				"\t\tSELECT  t.jogador,SUM(valor) as apos FROM transacao t JOIN aposta a ON (t.numero = a.transacao) group by t.jogador order by t.jogador)  as aposta\n" +
 				"\t\ton ( greatest(levantamento.jogador,jogador.id, deposito.jogador) = aposta.jogador)\n" +
 				"\t\tfull outer join(\n" +
-				"\t\tSELECT  t.jogador, SUM(r.valor) as res FROM transacao t JOIN resolucao r ON (t.numero = r.aposta and r.resultado = 'vitória') group by t.jogador order by t.jogador) as resultado\n"
-				+
-				"\t\ton(greatest(jogador.id,deposito.jogador,levantamento.jogador,aposta.jogador) = resultado.jogador)\n"
-				+
-				"\t\tgroup by  jogador.id, levantamento.jogador, deposito.jogador , aposta.jogador, resultado.jogador\n"
-				+
-				"\t\torder by  jogador.id, levantamento.jogador, deposito.jogador , aposta.jogador, resultado.jogador asc \n"
-				+
+				"\t\tSELECT  t.jogador, SUM(r.valor) as res FROM transacao t JOIN resolucao r ON (t.numero = r.aposta) group by t.jogador order by t.jogador) as resultado\n" +
+				"\t\ton(greatest(jogador.id,deposito.jogador,levantamento.jogador,aposta.jogador) = resultado.jogador)\n" +
+				"\t\tgroup by  jogador.id, levantamento.jogador, deposito.jogador , aposta.jogador, resultado.jogador\n" +
+				"\t\torder by  jogador.id, levantamento.jogador, deposito.jogador , aposta.jogador, resultado.jogador asc \n" +
 				"\t\tlimit 1";
 
 		final String CMDST_Insert = "BEGIN;\n " +
@@ -298,71 +340,118 @@ public class Model {
 				"  SELECT numero\n" +
 				"  FROM transacao \n" +
 				"  ORDER BY numero DESC LIMIT 1), ?, ?, ?); \n" +
+				"INSERT  INTO resolucao(id, resultado, data_resolucao, aposta)\n" +
+				"VALUES((\n" +
+				"  SELECT numero\n" +
+				"  FROM transacao \n" +
+				"  ORDER BY numero DESC LIMIT 1),null , null, (SELECT numero FROM transacao ORDER BY numero DESC LIMIT 1));\n" +
 				"COMMIT TRANSACTION;";
+
 
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		PreparedStatement pstmtquery = null;
 		PreparedStatement pstmtquery_CA = null;
-		PreparedStatement pstmtquery_casa_apostas = null;
-		PreparedStatement pstmtquery_estado_jogador = null;
+		Statement stmt = null;
 
 		ResultSet result = null;
 		ResultSet result2 = null;
 		ResultSet result3 = null;
 
+
 		try {
 			conn = getCon();
+			java.util.Scanner key = new Scanner(System.in);
+			stmt = conn.createStatement();
+			result = stmt.executeQuery("SELECT id, nome FROM casa_apostas");
+
+			System.out.println("Casas de apostas disponiveis: \n");
+			LinkedList[] table  =printTable(result);
+			while(table[0].size() == 0) {
+				System.out.print("\nNão existem casa de apostas disponiveis" +
+						"\nPor favor crie casa de apostas e tente outra vez! \n" +
+						"\n Press 1 to exit --> ");
+				int exit = Integer.parseInt(key.nextLine());
+				if(exit == 1) return;
+			}
+
+			System.out.print("\nEscolha o id da casa de apostas pretendida:");
+			int id_casa_apostas = Integer.parseInt(key.nextLine());
+			while (!table[0].contains(String.valueOf(id_casa_apostas))) {
+				System.out.print("Id invalido, escolha um dentro da lista acima: ");
+				id_casa_apostas = Integer.parseInt(key.nextLine());
+			}
+			if(table[0].getFirst() == null) {
+				System.out.print("Não existem jogador com estado 'Activo' nesta casa de apostas ");
+			}
+
+
+
+			stmt = conn.createStatement();
+			result = stmt.executeQuery("SELECT id, nome FROM jogador where estado = 'activo' and casa_apostas ="+id_casa_apostas);
+			//if(!result.next()) { System.out.println("Não existem jogadores na casa de apsotas ID "+id_casa_apostas); return; } else result.beforeFirst();
+			System.out.println("Jogadores disponiveis na casa de apsotas ID "+id_casa_apostas+" com estado 'ACTIVO': \n");
+
+			table = printTable(result);
+			while(table[0].size() == 0) {
+				System.out.print("\nNão existem jogadores com estado 'Activo' nesta casa de apostas!" +
+						"\nPor favor insira um jogador e tente outra vez ou mude de casa de apostas! \n" +
+						"\n Press 1 to exit --> ");
+				int exit = Integer.parseInt(key.nextLine());
+				if(exit == 1) return;
+			}
+			System.out.print("\nEscolha o id do jogador pretendida: ");
+			int id_jogador = Integer.parseInt(key.nextLine());
+			while (!table[0].contains(String.valueOf(id_jogador))) {
+				System.out.print("Id invalido, escolha um dentro da lista acima: ");
+				id_jogador = Integer.parseInt(key.nextLine());
+			}
+
 			pstmt = conn.prepareStatement(CMDST_Insert);
 
-			System.out.println("Inserir Aposta: jogador, tipo, odd, descricao, valor_Aposta, casa_apostas");
-			java.util.Scanner key = new Scanner(System.in);
-
-			System.out.println("jogador");
-			int id_jogador;
-			do {
-				id_jogador = Integer.parseInt(key.nextLine());
+			//System.out.println("jogador");
+			/*do {
 				pstmtquery_estado_jogador = conn.prepareStatement(CMDQueryEstadoJogador);
 				pstmtquery_estado_jogador.setInt(1, id_jogador);
-				result = pstmtquery_estado_jogador.executeQuery();
-				result.next();
-				if (!(result.getString("estado").matches("activo")))
-					System.out.println("Jogador com estado invalido para fazer apostas, pff insira outro");
-			} while (!(result.getString("estado").matches("activo")));
+				result2 = pstmtquery_estado_jogador.executeQuery();
+				result2.next();
+				if(!(result2.getString("estado").matches("activo")))
+					System.out.println("Jogador id("+id_jogador+") com estado invalido para fazer apostas, pff insira outro id:\n");
+					id_jogador = Integer.parseInt(key.nextLine());
+					//printTable(result);
+			}
+			while(!(result2.getString("estado").matches("activo")));*/
 
 			pstmt.setInt(3, id_jogador);
 
+			System.out.println("Inserir Aposta: tipo, odd, descricao, valor_Aposta");
 			System.out.println("tipo");
-			// pstmt.setString(1, key.nextLine());
+			//pstmt.setString(1, key.nextLine());
 			pstmt.setString(4, "simples");
 			System.out.println("odd");
-			// pstmt.setFloat(2, Float.parseFloat(key.nextLine()));
+			//pstmt.setFloat(2, Float.parseFloat(key.nextLine()));
 			pstmt.setFloat(5, (float) 2.3);
 			System.out.println("descricao");
-			// pstmt.setString(3, key.nextLine());
+			//pstmt.setString(3, key.nextLine());
 			pstmt.setString(6, "benfica vs porto");
+
 
 			System.out.println("valor_Aposta");
 			float valor_aposta = Float.parseFloat(key.nextLine());
 
-			// Vai buscar a casa de apostas do jogador selecionado
-			pstmtquery_casa_apostas = conn.prepareStatement(CMDQuery_CA_jogador);
-			pstmtquery_casa_apostas.setInt(1, id_jogador);
-			result3 = pstmtquery_casa_apostas.executeQuery();
-			result3.next();
-			int id_casa_apostas = result3.getInt("casa_apostas");
-			pstmt.setInt(2, id_casa_apostas);
 
-			// Verifica se o valor da aposta cumpre o valor minimo da casa de apostas
+			//Verifica se o valor da aposta cumpre o valor minimo da casa de apostas
 			pstmtquery_CA = conn.prepareStatement(CMDQuery_CA_minimo);
 			pstmtquery_CA.setInt(1, id_casa_apostas);
 			result = pstmtquery_CA.executeQuery();
 			result.next();
 			while (result.getInt("aposta_minima") > (float) valor_aposta) {
-				System.out.println("Valor da aposta superior ao valor minimo definido pela casa de apostas");
+				System.out.println("Valor da aposta superior ao valor minimo definido pela casa de apostas: "+ result.getInt("aposta_minima")+"\nEscolha outro valor");
 				valor_aposta = Float.parseFloat(key.nextLine());
 			}
 			pstmt.setFloat(1, valor_aposta);
+
+
 
 			pstmtquery = conn.prepareStatement(CMDQuerySaldo);
 			pstmtquery.setInt(1, id_jogador);
@@ -370,28 +459,27 @@ public class Model {
 			result2.next();
 			float saldo = result2.getFloat("saldo");
 			while (saldo < valor_aposta) {
-				System.out.println("Saldo Insuficiente (" + saldo + ") para fazer uma aposta desse valor");
+				System.out.println("Saldo Insuficiente ("+saldo+") para fazer uma aposta desse valor");
 				System.out.print("Introduza um novo valor para a aposta:");
 				valor_aposta = Float.parseFloat(key.nextLine());
 			}
+
+
 
 			pstmt.executeQuery();
 			System.out.print("Aposta Introduzida :)");
 			key.close();
 
-		} catch (Exception err) {
+
+		}catch (Exception err) {
 			System.out.println(err);
-			// Nothing to do. The option was not a valid one. Read another.
+			//Nothing to do. The option was not a valid one. Read another.
 		} finally {
 			try {
-				if (conn != null)
-					conn.close();
-				if (pstmt != null)
-					pstmt.close();
-				if (pstmtquery != null)
-					pstmtquery.close();
-				if (result != null)
-					result.close();
+				if (conn != null) conn.close();
+				if (pstmt != null) pstmt.close();
+				if (pstmtquery != null) pstmtquery.close();
+				if (result != null) result.close();
 			} catch (SQLException ignored) {
 			}
 		}
@@ -421,7 +509,7 @@ public class Model {
 			int sut = -1;
 			while (!bool) {
 				System.out.print("Id: ");
-				sut = in.nextInt();
+				sut = input.nextInt();
 				bool = table[0].contains(String.valueOf(sut));
 			}
 			pstmt.setInt(1, sut);
@@ -461,18 +549,26 @@ public class Model {
 			conn = getCon();
 			stmt = conn.createStatement();
 			result = stmt.executeQuery(getBetHousesQuerie);
+			System.out.println("Casas de apostas disponiveis: \n");
 			LinkedList[] table = printTable(result);
-			System.in.read();
+
+			while(table[0].size() == 0) {
+				System.out.print("\nNão existem casa de apostas disponiveis" +
+						"\nPor favor crie casa de apostas e tente outra vez! \n" +
+						"\n Press 1 to exit --> ");
+				int exit = Integer.parseInt(input.nextLine());
+				if(exit == 1) return;
+			}
 
 			result = null;
 
 			pstmt = conn.prepareStatement(countQuerie);
-			System.out.println("Id da Casa de Apostas que pretende ter o nº de utilizadores?");
+			System.out.println("\nId da Casa de Apostas que pretende ter o nº de utilizadores?");
 			boolean bool = false;
 			int sut = -1;
 			while (!bool) {
 				System.out.print("Id: ");
-				sut = in.nextInt();
+				sut = input.nextInt();
 				bool = table[0].contains(String.valueOf(sut));
 			}
 			pstmt.setInt(1, sut);
@@ -527,37 +623,42 @@ public class Model {
 			stmt = conn.createStatement();
 			result = stmt.executeQuery(aposta_sem_resolucao);
 			ResultSetMetaData md = result.getMetaData();
-			int columns = md.getColumnCount();
 			System.out.println("Apostas sem Resolucao: \n \n");
-			printTable(result);
+
+			LinkedList[] table  =printTable(result);
+			while(table[0].size() == 0) {
+				System.out.print("\nNão existem Apostas sem Resolucao" +
+						"\n\n" +
+						"\n Press 1 to exit --> ");
+				int exit = Integer.parseInt(key.nextLine());
+				if(exit == 1) return;
+			}
 
 			pstmt = conn.prepareStatement(updateResolucao);
 			System.out.println("\nId da aposta que pretende alterar a resolução?");
 			int id_aposta = Integer.parseInt(key.nextLine());
-			// while(result.next()){
-			// int test = result.getInt("id");
-			// System.out.println(test);
-			// }
+			while (!table[0].contains(String.valueOf(id_aposta))) {
+				System.out.print("Id invalido, escolha um dentro da lista acima: ");
+				id_aposta = Integer.parseInt(key.nextLine());
+			}
+
+
 			pstmt.setDate(1, java.sql.Date.valueOf(java.time.LocalDate.now()));
 			pstmt.setInt(4, id_aposta);
 			System.out.println("Valor da nova resolução:");
 			float valorResolucao = Float.parseFloat(key.nextLine());
-			pstmt.setFloat(2, valorResolucao);
+			pstmt.setFloat(2,valorResolucao);
 			String resultado;
-			if (valorResolucao == 0)
-				resultado = "derrota";
+			if(valorResolucao == 0) resultado = "derrota";
 			else {
 				pstmtValor = conn.prepareStatement(valorAposta);
 				pstmtValor.setInt(1, id_aposta);
 				rsValor = pstmtValor.executeQuery();
 				rsValor.next();
 				float valorApo = rsValor.getFloat("valor");
-				if (valorApo > valorResolucao)
-					resultado = "cashout";
-				else if (valorApo == valorResolucao)
-					resultado = "reembolso";
-				else
-					resultado = "vitória";
+				if( valorApo > valorResolucao) resultado = "cashout";
+				else if( valorApo  == valorResolucao) resultado = "reembolso";
+				else resultado = "vitória";
 			}
 			pstmt.setString(3, resultado);
 
@@ -583,7 +684,7 @@ public class Model {
 
 	public static void showPlayersBets() {
 		// Querie para mostrar as Apostas de um dado Jogador
-		final String getPlayersBetsQuerie = "select distinct  t.numero as Aposta_Num,tipo, odd, descricao FROM aposta as a JOIN transacao as t ON (a.transacao = t.numero) WHERE t.jogador IN(SELECT id FROM jogador j WHERE j.nome = ?) GROUP BY t.numero, a.tipo, a .odd, a.descricao";
+		final String getPlayersBetsQuerie = "select distinct  t.numero as num, tipo, odd, descricao FROM aposta as a JOIN transacao as t ON (a.transacao = t.numero) WHERE t.jogador IN(SELECT id FROM jogador j WHERE j.nome = ?) GROUP BY t.numero, a.tipo, a .odd, a.descricao";
 
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -594,7 +695,7 @@ public class Model {
 			pstmt = conn.prepareStatement(getPlayersBetsQuerie);
 			System.out.println("Qual é o Nome do Jogador do qual quer ver as Apostas?");
 			System.out.print("Nome: ");
-			pstmt.setString(1, in.nextLine());
+			pstmt.setString(1, input.nextLine());
 			result = pstmt.executeQuery();
 
 			printTable(result);
@@ -648,4 +749,6 @@ public class Model {
 		}
 		return table;
 	}
+
+
 }
