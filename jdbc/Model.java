@@ -413,12 +413,18 @@ public class Model {
 			conn = getCon();
 			stmt = conn.createStatement();
 			result = stmt.executeQuery(jogadoresAtivosQuerie);
-			printTable(result);
+			LinkedList[] table = printTable(result);
 
 			pstmt = conn.prepareStatement(update);
 			System.out.println("Id do utilizador que pretende remover?");
-			System.out.print("id: ");
-			pstmt.setInt(1, in.nextInt());
+			boolean bool = false;
+			int sut = -1;
+			while (!bool) {
+				System.out.print("Id: ");
+				sut = in.nextInt();
+				bool = table[0].contains(String.valueOf(sut));
+			}
+			pstmt.setInt(1, sut);
 			pstmt.execute();
 
 		} catch (Exception err) {
