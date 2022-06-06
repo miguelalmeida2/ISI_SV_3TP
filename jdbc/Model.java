@@ -502,6 +502,13 @@ public class Model {
 			stmt = conn.createStatement();
 			result = stmt.executeQuery(jogadoresAtivosQuerie);
 			LinkedList[] table = printTable(result);
+			while(table[0].size() == 0) {
+				System.out.print("\nNão existem jogadores na Bd com estado 'activo'" +
+						"\nPor favor crie casa de apostas e tente outra vez! \n" +
+						"\n Press 1 to exit --> ");
+				int exit = Integer.parseInt(input.nextLine());
+				if(exit == 1) return;
+			}
 
 			pstmt = conn.prepareStatement(update);
 			System.out.println("Id do utilizador que pretende remover?");
